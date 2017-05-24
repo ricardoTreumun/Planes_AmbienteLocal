@@ -1,0 +1,109 @@
+#!groovy
+
+/*
+properties([
+    buildDiscarder(logRotator(artifactNumToKeepStr: '10', numToKeepStr: '10')),
+    disableConcurrentBuilds(), pipelineTriggers([])
+])
+*/
+
+/** ************************************************************/
+/*                 Parámetros del Proyecto                    */
+/** ************************************************************/
+def rutaBDD = "./"
+def projectEmail = "bci.automatizacion@tinet.cl"
+def commit = ""
+
+/** **************************************************************/
+/*                Etapa 1 - Actualizacion De Fuentes            */
+/** **************************************************************/
+stage 'Checkout'
+    node("docker-host-4") {
+        checkout scm
+        def branchNameFile = "${env.JOB_NAME.replaceFirst('.+/', '').replaceFirst('%2F', '_')}"
+        echo 'el branchNameFile es ' + branchNameFile
+        sh "git rev-parse HEAD > ${branchNameFile}"
+        commit = readFile("${branchNameFile}").trim()
+        echo 'el commit es ' + commit
+    }
+
+/** **************************************************************/
+/*                Etapa 2 - Revision código                      */
+/** **************************************************************/
+stage 'Setup Ambiente'
+    node("docker-host-4") {
+    }
+
+/** **************************************************************/
+/*                Etapa 3 - Ejecucion de pruebas                 */
+/** **************************************************************/
+boolean esDevelop = ("${env.BRANCH_NAME}".indexOf("develop").toString() >= '0');
+boolean esMaster = ("${env.BRANCH_NAME}".indexOf("master").toString() >= '0');
+
+stage 'Ejecución de pruebas'
+    if (esDevelop || esMaster) {
+        node("docker-host-4") {
+            try {
+                withEnv(['DISPLAY=:0']) {
+                    echo "limpio directorio temporal de Xvfb"
+                    sh "rm -rf tempfbdir_*"
+                    sh "mkdir tempfbdir_${commit}"
+
+                    echo "Iniciando Xvfb"
+                    sh "/usr/bin/Xvfb :0 -screen 0 1024x768x24 -fbdir ./tempfbdir_${commit} &"
+
+                    echo "Actualizando dependencias"
+                    sh "bundle install"
+
+                    echo "Ejecutando Cucumber"
+                    sh "rake cucumber:alm_publico[dev,firefox]"
+
+                    echo "Pruebas ejecutadas"
+                }
+            }
+            catch (Exception e) {
+                echo "Error al ejecutar Cucumber"
+                echo e.getMessage()
+
+                send_bdd_email "${projectEmail}"
+                error "Oops! Error al ejecutar las Pruebas Cucumber!"
+            } finally {
+                try {
+                    echo "Publicando resultados BDD"
+                    publishHTML(target: [allowMissing: false, keepAll: true, reportDir: 'results/', reportFiles: 'reporte.html', reportName: 'BDD Test results'])
+                    echo "Resultados BDD publicados"
+                } catch (Exception e) {
+                    echo "Error al publicar resultados de las pruebas."
+                    echo e.getMessage()
+                }
+
+                try {
+                    echo "Deteniendo proceso del Xvfb para el commit: ${commit}"
+                    sh "ps -aux | grep Xvfb | grep $commit | grep -v grep | awk '{print \$2}' | xargs kill -9"
+                } catch (Exception e) {
+                    echo "No se logro detener proceso del Xvfb."
+                    echo e.getMessage()
+                }
+            }
+        }
+    } else {
+        echo "No Aplica pruebas de BDD"
+    }
+
+
+/** **************************************************************/
+/*                Funciones - Envios de correo                   */
+/** **************************************************************/
+def send_bdd_email(dirs) {
+    mail    \
+       to: "${dirs}",
+            subject: "[Fallo en Pruebas BDD] -> Proyecto '${env.JOB_NAME}' (#${env.BUILD_NUMBER})",
+            body: """\
+       El proyecto '${env.JOB_NAME}' (#${env.BUILD_NUMBER}) falló la ejecución de las pruebas BDD
+
+       Reporte de la ejecución:  ${env.BUILD_URL}BDD_Test_results/
+
+       Build:  ${env.BUILD_URL}
+
+       """
+}

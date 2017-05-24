@@ -1,0 +1,100 @@
+---
+default: -p bci-dev -p flujo-completo -p firefox
+empty: --format progress
+
+# Resultados
+results: --format html --out results/reporte.html --format progress
+
+#APP
+app-sitiopublico: WEB_CONTEXT_SITIO_PUBLICO=/webPublico/planes.html
+app-bcinet: WEB_CONTEXT_BCINET=/Bcinet/resources/bcinetweb/index.html BCINET_LOGIN=#/bcinet/common/login BCINET_PLANES=#/bcinet/private/planes/landing BCINET_USER=plorca BCINET_PASS=plorca.2013
+
+# Server
+#bci-dev: URL=http://161.131.141.251:8480 -p app-sitiopublico -p app-bcinet -p datos-prueba -p bd-dev -p bd-cert-suc -p datos-ssh-cert -p results
+#bci-int: URL=http://161.131.141.251:8380 -p app-sitiopublico -p app-bcinet -p datos-prueba -p bd-cert -p bd-cert-suc -p datos-ssh-cert -p results
+
+bci-build: URL=http://172.16.98.217:9111 -p app-sitiopublico -p app-bcinet -p datos-prueba -p bd-dev -p bd-cert-suc -p datos-ssh-cert -p results
+bci-int: URL=http://172.16.98.233:9111 -p app-sitiopublico -p app-bcinet -p datos-prueba -p bd-cert -p bd-cert-suc -p datos-ssh-cert -p results
+bci-cert: URL=http://172.16.98.218:9111 -p app-sitiopublico -p app-bcinet -p datos-prueba -p bd-cert -p bd-cert-suc -p datos-ssh-cert -p results
+
+ngrok-dev: URL=http://a09e3c8c.ngrok.io -p app-sitiopublico -p app-bcinet -p datos-prueba -p bd-dev -p bd-cert-suc -p results
+ngrok-int: URL=http://f6ccf1ca.ngrok.io -p app-sitiopublico -p app-bcinet -p datos-prueba -p bd-cert -p bd-cert-suc -p results
+shell-cert: -p datos-ssh-cert -t @shell -p results
+shell-tinet: -p datos-ssh-tinet -t @shell -p results
+
+# Base de datos
+bd-dev: BD=dulyses_i
+bd-int: BD=culyses_i
+bd-cert: BD=culyses_i
+
+bd-dev-suc: BD_SUC=dulyses_ii
+bd-int-suc: BD_SUC=culyses_ii
+bd-cert-suc: BD_SUC=culyses_ii
+
+# Tipos de Navegador
+phantomjs: BROWSER=phantomjs
+ie: BROWSER=ie
+safari: BROWSER=safari
+chrome: BROWSER=chrome
+firefox: BROWSER=firefox
+selenium-server: BROWSER=selenium-server
+selenium-firefox: BROWSER=selenium-firefox
+
+# Datos de prueba y contextos
+datos-prueba: RUT=17439896 DV=8 SERIE=A020159086 CORREO=jpaineq@bcicert.cl URLCORREO=http://161.131.86.142/mail/ USERCORREO=jpaineq PASSCORREO=jpaineq
+datos-ssh-cert: SSH_HOST=161.131.232.185 SSH_USER=viajepl SSH_PASS=prospe01
+datos-ssh-tinet: SSH_HOST=161.131.232.185 SSH_USER=viajepl SSH_PASS=prospe01 SSH_GW_HOST=161.131.184.81 SSH_GW_USER=sipe SSH_GW_PASS=sipe01 SSH_GW_PORT=10022
+
+# TAGS
+flujo-completo: -t @flujo_completo_publico,@flujo_completo_bcinet
+flujo-completo-publico: -t @flujo_completo_publico
+flujo-completo-bcinet: -t @flujo_completo_bcinet
+alm: -t @alm_bcinet,@alm_publico
+alm-publico: -t @alm_publico
+alm-bcinet: -t @alm_bcinet
+atomico: -t @atomico_bcinet,@atomico_publico
+atomico-bcinet: -t @atomico_bcinet
+atomico-publico: -t @atomico_publico
+CPM00010-bcinet: -t @CPM00010_bcinet
+CPM00020-bcinet: -t @CPM00020_bcinet
+CPM00031-bcinet: -t @CPM00031_bcinet
+CPM00040-bcinet: -t @CPM00040_bcinet
+CPM00050-bcinet: -t @CPM00050_bcinet
+CPM00060-bcinet: -t @CPM00060_bcinet
+CPM00010-publico: -t @CPM00010_publico
+CPM00020-publico: -t @CPM00020_publico
+CPM00030-publico: -t @CPM00030_publico
+CPM00040-publico: -t @CPM00040_publico
+CPM00050-publico: -t @CPM00050_publico
+CPM00060-publico: -t @CPM00060_publico
+CPM00010: -t @CPM00010_publico,@CPM00010_bcinet
+CPM00020: -t @CPM00020_publico,@CPM00020_bcinet
+CPM00030: -t @CPM00030_publico
+CPM00031: -t @CPM00031_bcinet
+CPM00040: -t @CPM00040_publico,@CPM00040_bcinet
+CPM00050: -t @CPM00050_publico,@CPM00050_publico
+CPM00060: -t @CPM00060_publico,@CPM00060_publico
+plancomun-bcinet: -t @plancomun_bcinet
+plancomun-publico: -t @plancomun_publico
+plancomun: -t @plancomun_bcinet,@plancomun_publico
+planaadvantage-bcinet: -t @planaadvantage_bcinet
+planaadvantage-publico: -t @planaadvantage_publico
+planaadvantage: -t @planaadvantage_bcinet,@planaadvantage_publico
+planes-tdc: -t @planaadvantage_bcinet,@planaadvantage_publico,@plancomun_bcinet,@plancomun_publico
+test-shell: -t @prueba-shell
+sprint-0-us113-bcinet: -t @sprint-0-us113-bcinet
+sprint-0-us113-publico: -t @sprint-0-us113-publico
+sprint-0-us139-bcinet: -t @sprint-0-us139-bcinet
+sprint-0-us139-publico: -t @sprint-0-us139-publico
+sprint-1-us116-bcinet: -t @sprint-1-us116-bcinet
+sprint-1-us117-bcinet: -t @sprint-1-us117-bcinet
+sprint-2-us454-bcinet: -t @sprint-2-us454-bcinet
+sprint-2-us389-publico: -t @sprint-2-us389-publico
+sprint-2-us387-bcinet: -t @sprint-2-us387-bcinet
+sprint-2-us390-bcinet: -t @sprint-2-us390-bcinet
+sprint-2-us149-bcinet: -t @sprint-2-us149-bcinet
+sprint-3-us407-publico: -t @sprint-3-us407-publico
+planes_publico: -t @sprint-2-us389-publico
+planes_privado: -t @sprint-0-us113-bcinet,@sprint-0-us139-bcinet,@sprint-1-us116-bcinet,@sprint-1-us117-bcinet,@sprint-2-us454-bcinet,@sprint-2-us387-bcinet,@sprint-2-us149-bcinet
+planes_todos: -t @sprint-0-us113-publico,@sprint-0-us139-publico,@sprint-2-us389-publico,@sprint-0-us113-bcinet,@sprint-0-us139-bcinet,@sprint-1-us116-bcinet,@sprint-1-us117-bcinet,@sprint-2-us454-bcinet,@sprint-2-us387-bcinet,@sprint-2-us149-bcinet
+prueba: -t @prueba
